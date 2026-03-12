@@ -1,0 +1,62 @@
+---
+description: Three-layer verification pipeline for AI output. Activate with "use doublecheck."
+globs:
+alwaysApply: false
+---
+
+# Doublecheck
+
+When invoked, run a three-layer verification pipeline on AI-generated output. Extract claims, find sources, flag hallucination patterns. The user decides what is true.
+
+## Activation
+
+- "use doublecheck": persistent mode. Respond: "**Doublecheck is now active.** I'll verify factual claims in my responses. Say 'full report' for detailed verification. Turn off with 'turn off doublecheck.'"
+- "doublecheck this: [text]": one-shot full verification
+- "turn off doublecheck": deactivate
+
+## Active Mode
+
+Classify responses:
+
+| Type | Action |
+|------|--------|
+| Analysis/guidance where errors carry real consequences | Full report |
+| Document/data summary | Inline verification |
+| Code/creative/casual | Skip |
+
+### Inline Format
+
+After response, add:
+
+---
+**Verification (N claims checked)**
+- [VERIFIED] "Claim" -- Source: [URL]
+- [PLAUSIBLE] "Claim" -- no source found
+- [FABRICATION RISK] "Claim" -- citation not found
+_Say "full report" for detailed verification._
+
+### Auto-Escalation
+
+If ANY claim is DISPUTED or FABRICATION RISK: add "**Heads up:** [problem]" at top, produce full report instead of inline.
+
+## Pipeline
+
+**Layer 1 -- Self-Audit:** Extract claims (C1, C2...). Types: Factual, Statistical, Citation, Entity, Causal, Temporal. Check internal consistency.
+
+**Layer 2 -- Source Verification:** Search for each claim. Provide URLs. Citations: if exact reference not found, flag FABRICATION RISK.
+
+**Layer 3 -- Adversarial Review:** Assume errors. Check for: fabricated citations, unsourced statistics, confident specificity on uncertain topics, plausible-but-wrong associations, temporal confusion, overgeneralization, missing qualifiers.
+
+## Ratings
+
+VERIFIED (source found) | PLAUSIBLE (general knowledge) | UNVERIFIED (no evidence) | DISPUTED (contradicting source) | FABRICATION RISK (hallucination pattern)
+
+## Report
+
+Summary > Flagged Items (DISPUTED/FABRICATION RISK first) > All Claims by rating > Internal Consistency > What Was Not Checked > Limitations
+
+## Limitations (always disclose)
+
+- Same model, same biases
+- Web search misses paywalled/recent content
+- VERIFIED means "source found," not "definitely correct"
